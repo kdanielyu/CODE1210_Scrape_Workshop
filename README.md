@@ -18,13 +18,16 @@ cd CODE1210_Scrape_Workshop
 python3 run.py
 ```
 
-`run.py` is a one-command launcher: it checks your Python version (3.10+), installs everything in `requirements.txt`, creates a local `data/` folder, copies `.env.example` to `.env` if needed, and starts the Streamlit dashboard at **http://localhost:8501**. Add your `GOOGLE_MAPS_API_KEY` to the `.env` file before scraping (full walkthrough in **Part 2 — Setup**).
+`run.py` is a one-command launcher. It checks your Python version (3.10+), **creates an isolated virtual environment (`.venv`) and installs everything there** — so it works even when your system Python is "externally managed" (the error you get with Homebrew Python on macOS or `apt` Python on Debian/Ubuntu). It then creates a local `data/` folder, copies `.env.example` to `.env` if needed, and starts the Streamlit dashboard at **http://localhost:8501**. Add your `GOOGLE_MAPS_API_KEY` to the `.env` file before scraping (full walkthrough in **Part 2 — Setup**).
+
+> **No manual `pip install` needed.** Running `pip install ...` against the system Python is exactly what triggers the `externally-managed-environment` error. Just run `python3 run.py` and let it handle the virtual environment for you.
 
 | Command | What it does |
 |---------|--------------|
-| `python3 run.py` | Install dependencies (if needed) and start the dashboard |
-| `python3 run.py --install` | Install / refresh dependencies only, then exit |
+| `python3 run.py` | Create `.venv` (if needed), install dependencies, start the dashboard |
+| `python3 run.py --install` | Set up `.venv` + install dependencies only, then exit |
 | `python3 run.py --no-install` | Skip the dependency check and launch immediately |
+| `python3 run.py --no-venv` | Use your currently active Python / conda env instead of `.venv` |
 
 > **Looking for the technical reference?** The full architecture, database schema, and developer docs live in [`docs/PROJECT.md`](docs/PROJECT.md).
 
@@ -147,14 +150,14 @@ Google gives **$200 free credit per month**. A typical scrape covering a 1.5 km 
 ### Prerequisites
 
 - Python 3.10 or newer (check: `python3 --version`)
-- The project folder unzipped on your machine
+- The project folder on your machine — either `git clone` it (see [Get the Workshop Package](#get-the-workshop-package)) or unzip the download
 
 ### Step-by-step Deployment
 
 **3.1 — Open a terminal in the project folder**
 
 ```bash
-cd urban_data_scraper
+cd CODE1210_Scrape_Workshop
 ```
 
 **3.2 — Configure your API key**
@@ -186,17 +189,42 @@ python3 run.py
 flowchart TD
     A[python3 run.py] --> B{Python 3.10 or newer?}
     B -- No --> C[Error: upgrade Python]
-    B -- Yes --> D[pip install -r requirements.txt]
+    B -- Yes --> V{Already in a venv<br/>or conda env?}
+    V -- No --> W[Create .venv and<br/>re-launch inside it]
+    V -- Yes --> D
+    W --> D[pip install -r requirements.txt<br/>into the environment]
     D --> E[Create data/ directory]
     E --> F{.env exists?}
     F -- No --> G["Copy .env.example to .env"]
     G --> H[Warn: add API key]
-    F -- Yes --> I[Validate GOOGLE_MAPS_API_KEY set]
-    I --> J[streamlit run Scraper.py]
+    F -- Yes --> I[Check GOOGLE_MAPS_API_KEY]
+    H --> J[streamlit run Scraper.py]
+    I --> J
     J --> K[Dashboard at localhost:8501]
 ```
 
 The dashboard opens automatically. If it doesn't, navigate to **http://localhost:8501** in your browser.
+
+> **Why a virtual environment?** Modern macOS (Homebrew) and Linux (Debian/Ubuntu) mark the system Python as *externally managed*. Installing packages into it with `pip` is blocked and raises `error: externally-managed-environment`. `run.py` sidesteps this entirely by creating a project-local `.venv` and installing there — nothing is installed into your system Python.
+
+### Troubleshooting
+
+| Symptom | Fix |
+|---------|-----|
+| `error: externally-managed-environment` | Don't run `pip install` directly — just run `python3 run.py`. It installs into `.venv` automatically. |
+| `python -m venv` fails on Linux (`ensurepip is not available`) | Install the venv package: `sudo apt install python3-venv`, then re-run `python3 run.py`. |
+| You use Anaconda / your own venv | Activate it first, then run `python3 run.py` — it detects the active environment and installs there instead of creating `.venv`. (Or pass `--no-venv`.) |
+| Dependencies look broken | Delete the `.venv/` folder and run `python3 run.py` again to rebuild it from scratch. |
+
+To run other commands (e.g. `streamlit`, `python`) against the same dependencies later, activate the environment first:
+
+```bash
+# macOS / Linux
+source .venv/bin/activate
+
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+```
 
 ---
 
