@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "urban-data-scraper"
+version = "1.0.0"
+description = "A multipage Streamlit dashboard for scraping and visualising urban place and social data"
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+keywords = ["streamlit", "scraping", "urban", "places", "dashboard", "sentiment"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Education",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+]
+dependencies = [
+    "streamlit>=1.37.0",
+    "googlemaps>=4.10.0",
+    "requests>=2.31.0",
+    "pandas>=2.0.0",
+    "folium>=0.15.0",
+    "streamlit-folium>=0.20.0",
+    "plotly>=5.18.0",
+    "vaderSentiment>=3.3.2",
+    "python-dotenv>=1.0.0",
+    "openpyxl>=3.1.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/your-org/urban-data-scraper"
+Issues = "https://github.com/your-org/urban-data-scraper/issues"
+
+[project.scripts]
+urban-scraper = "run:main"
+
+[tool.setuptools.packages.find]
+include = ["core*", "scrapers*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.toml", "*.example"]
